@@ -1,0 +1,36 @@
+{
+	"version": 3,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 20,
+		"patch": 0
+	},
+	"configurePresets": [
+		{
+			"name": "essential",
+			"hidden": true,
+			"cacheVariables": {
+				"CMAKE_EXPORT_COMPILE_COMMANDS": true,
+				"CMAKE_TOOLCHAIN_FILE": "your/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake"
+			}
+		},
+		{
+			"name": "dev_config",
+			"hidden": true,
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			},
+			"inherits":["essential"]
+		},
+		{
+			"name": "win32_vs2022",
+			"displayName": "[WIN32][VS2022] Dev",
+			"description": "Default dev config with Visual Studio 2022 generator",
+			"binaryDir": "${sourceDir}/build",
+			"generator": "Visual Studio 17 2022",
+			"cacheVariables": {
+				"WIN32": true
+			}
+		}
+	]
+}
