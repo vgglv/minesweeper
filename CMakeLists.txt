@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 project(minesweeper)
 
-
 set(CWD ${CMAKE_CURRENT_LIST_DIR})
 
 macro(Log arg)
@@ -10,15 +9,13 @@ endmacro()
 
 # APPLICATION
 file(GLOB_RECURSE application_sources
-	"${CWD}/src/application/*.h"
-	"${CWD}/src/application/*.cpp"
+	"game/sources/application/*.cpp"
 )
 LOG("Added application sources: ${application_sources}")
 
 # RANDOM
 file(GLOB_RECURSE random_sources
-	"${CWD}/src/random/*.h"
-	"${CWD}/src/random/*.cpp"
+	"game/sources/random/*.cpp"
 )
 LOG("Added random sources: ${random_sources}")
 
@@ -27,13 +24,20 @@ LOG("Added random sources: ${random_sources}")
 if (WIN32)
 	file(
 		GLOB_RECURSE windows_sources
-		"src/platforms/win32/*.h"
-		"src/platforms/win32/*.cpp"
+		"game/sources/platforms/win32/*.cpp"
 	)
 endif(WIN32)
 
-set(platform_sources 
+if (MACOS)
+	file(
+		GLOB_RECURSE macos_sources
+		"game/sources/platforms/macos/*.cpp"
+	)
+endif(MACOS)
+
+set(platform_sources
 	${windows_sources}
+	${macos_sources}
 )
 LOG("Added platform sources: ${platform_sources}")
 
@@ -50,19 +54,31 @@ if (WIN32)
 endif(WIN32)
 add_executable(${PROJECT_NAME} ${EXEC_VARIABLE} ${ALL_SOURCES})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES 
+set_target_properties(${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 17
 	CXX_STANDARD_REQUIRED ON
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CWD}/src)
 
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES ${ALL_SOURCES})
-
-message(STATUS ${CMAKE_TOOLCHAIN_FILE})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/game/" FILES ${ALL_SOURCES})
 
 find_package(SDL2 CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} 
+target_link_libraries(${PROJECT_NAME}
 	PRIVATE
-	$<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
-	$<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+	${SDL2_LIBRARIES}
 )
+target_include_directories(${PROJECT_NAME}
+	PRIVATE
+	${SDL2_INCLUDE_DIR}
+	${CMAKE_SOURCE_DIR}/game/include
+)
+if (WIN32 OR MACOS)
+	set_target_properties(${PROJECT_NAME} PROPERTIES
+	   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}
+	   RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}
+	   RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}
+	)
+endif(WIN32 OR MACOS)
+
+message(STATUS "SDL2 INCLUDE DIR: ${SDL2_INCLUDE_DIR}")
+message(STATUS "SDL2 LIBRARIES: ${SDL2_LIBRARIES}")

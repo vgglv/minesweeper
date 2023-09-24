@@ -1,3 +1,5 @@
 build
 .vscode
 CMakePresets.json
+.cache
+minesweeper
