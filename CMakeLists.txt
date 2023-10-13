@@ -9,29 +9,38 @@ endmacro()
 
 # APPLICATION
 file(GLOB_RECURSE application_sources
-	"game/sources/application/*.cpp"
+	"game/application/*.cpp"
+	"game/application/*.h"
 )
 LOG("Added application sources: ${application_sources}")
 
 # RANDOM
 file(GLOB_RECURSE random_sources
-	"game/sources/random/*.cpp"
+	"game/random/*.cpp"
+	"game/random/*.h"
 )
 LOG("Added random sources: ${random_sources}")
+
+# BOARD
+file(GLOB_RECURSE board_sources
+	"game/board/*.cpp"
+	"game/board/*.h"
+)
+LOG("Added board sources: ${board_sources}")
 
 # PLATFORM
 
 if (WIN32)
 	file(
 		GLOB_RECURSE windows_sources
-		"game/sources/platforms/win32/*.cpp"
+		"game/platforms/win32/*.cpp"
 	)
 endif(WIN32)
 
 if (MACOS)
 	file(
 		GLOB_RECURSE macos_sources
-		"game/sources/platforms/macos/*.cpp"
+		"game/platforms/macos/*.cpp"
 	)
 endif(MACOS)
 
@@ -41,11 +50,19 @@ set(platform_sources
 )
 LOG("Added platform sources: ${platform_sources}")
 
+file(
+	GLOB_RECURSE loader_sources
+	"game/loader/*.cpp"
+	"game/loader/*.h"
+)
+
 # ALL_SOURCES
 set(ALL_SOURCES
 	${application_sources}
 	${random_sources}
+	${board_sources}
 	${platform_sources}
+	${loader_sources}
 )
 
 set(EXEC_VARIABLE)
@@ -58,18 +75,20 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 17
 	CXX_STANDARD_REQUIRED ON
 )
-target_include_directories(${PROJECT_NAME} PUBLIC ${CWD}/src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CWD}/game)
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/game/" FILES ${ALL_SOURCES})
 
-find_package(SDL2 CONFIG REQUIRED)
+add_subdirectory(third_party/SDL)
+add_subdirectory(third_party/SDL_image)
+
 target_link_libraries(${PROJECT_NAME}
 	PRIVATE
-	${SDL2_LIBRARIES}
+	SDL2
+	SDL2_image
 )
 target_include_directories(${PROJECT_NAME}
 	PRIVATE
-	${SDL2_INCLUDE_DIR}
 	${CMAKE_SOURCE_DIR}/game/include
 )
 if (WIN32 OR MACOS)
@@ -80,5 +99,6 @@ if (WIN32 OR MACOS)
 	)
 endif(WIN32 OR MACOS)
 
-message(STATUS "SDL2 INCLUDE DIR: ${SDL2_INCLUDE_DIR}")
-message(STATUS "SDL2 LIBRARIES: ${SDL2_LIBRARIES}")
+set_target_properties(
+    ${PROJECT_NAME} PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")

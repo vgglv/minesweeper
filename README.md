@@ -24,7 +24,7 @@ $ cmake --preset win32_vs2022
 or just call cmake like so:
 
 ```sh
-$ cmake -B build . -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
+$ cmake -B build . -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
 ```
 
 *Warning: Change CMAKE_TOOLCHAIN_FILE to your own path*.

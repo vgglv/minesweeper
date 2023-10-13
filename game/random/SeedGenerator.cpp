@@ -1,4 +1,4 @@
-#include "random/SeedGenerator.h"
+#include "SeedGenerator.h"
 
 using namespace game::random;
 

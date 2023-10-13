@@ -3,3 +3,7 @@ build
 CMakePresets.json
 .cache
 minesweeper
+minesweeper.exe
+SDL2_imaged.dll
+SDL2d.dll
+minesweeper.pdb

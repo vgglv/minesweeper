@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "random/Seed.h"
+#include "Seed.h"
 
 namespace game::random {
 	class SeedGenerator {

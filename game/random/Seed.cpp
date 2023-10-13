@@ -1,4 +1,4 @@
-#include "random/Seed.h"
+#include "Seed.h"
 #include <random>
 #include <chrono>
 #include <iostream>
