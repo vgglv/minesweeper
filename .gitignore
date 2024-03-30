@@ -2,3 +2,4 @@ build
 .cache
 minesweeper
 compile_commands.json
+minesweeper.exe

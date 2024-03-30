@@ -3,6 +3,8 @@ project(minesweeper)
 
 set(CWD ${CMAKE_CURRENT_LIST_DIR})
 
+set(CXX_STANDARD 17)
+
 # APPLICATION
 file(GLOB_RECURSE GAME_SOURCES 
 	"game/*.cpp"
@@ -34,3 +36,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}
 )
 
+if (WIN32)
+target_compile_definitions(minesweeper PRIVATE WIN32)
+endif(WIN32)
