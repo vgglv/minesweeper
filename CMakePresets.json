@@ -16,7 +16,8 @@
 				"CMAKE_C_COMPILER": "cl",
 				"CMAKE_CXX_COMPILER": "cl",
 				"WIN32": true,
-				"CMAKE_BUILD_TYPE": "Debug"
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_EXPORT_COMPILE_COMMANDS": true
 			}
 		}
 	]

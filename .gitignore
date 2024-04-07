@@ -3,3 +3,6 @@ build
 minesweeper
 compile_commands.json
 minesweeper.exe
+minesweeper.ilk
+minesweeper.pdb
+.vscode/

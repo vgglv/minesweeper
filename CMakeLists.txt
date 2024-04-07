@@ -37,5 +37,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 if (WIN32)
-target_compile_definitions(minesweeper PRIVATE WIN32)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE WIN32)
 endif(WIN32)
