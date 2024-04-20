@@ -22,7 +22,7 @@ def generate_cmake():
 
 def build_executable():
     print('===== Starting CMake build =====')
-    build = ['cmake', '--build', BUILD_FOLDER_PATH, "--config", "Debug"]
+    build = ['cmake', '--build', BUILD_FOLDER_PATH, "--config", "Release"]
     process = subprocess.run(build)
     return process.returncode == 0
 

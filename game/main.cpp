@@ -1,10 +1,9 @@
-#include <iostream>
-#include "game.h"
+#include "GameWindow.h"
 
 int main() {
-	game::Game::initialize();
-	game::Game::run();	
-	game::Game::terminate();
+	game::GameWindow::initialize();
+	game::GameWindow::run();	
+	game::GameWindow::terminate();
 	return 0;
 }
 
