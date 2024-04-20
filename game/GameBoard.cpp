@@ -1,9 +1,16 @@
 #include "GameBoard.h"
 #include "Constants.h"
 #include "GameWindow.h"
+#include "Tile.h"
+#include "Painter.h"
+
+// std
 #include <vector>
 #include <memory>
 #include <random>
+#include <algorithm>
+
+// dependency
 #include "raylib.h"
 
 using namespace game;
@@ -64,51 +71,18 @@ void GameBoard::placeOneMine() {
 void GameBoard::draw() {
 	unsigned int _current_flags_count = 0;
 	for (const auto& tile : tiles) {
-		drawTile(tile.get());
-		if (tile->type == TileState::FLAGGED) {
+		Painter::drawTile(tile.get());
+		if (tile->state == TileState::FLAGGED) {
 			_current_flags_count++;
+		}
+		if (tile->state == TileState::PRESSED) {
+			tile->state = TileState::SEALED;
 		}
 	}
 
 	current_flags_count = _current_flags_count;
-}
 
-void GameBoard::drawTile(const Tile* tile) {
-	Rectangle cell_rect = {static_cast<float>(tile->x * TILE_SIZE), static_cast<float>(tile->y * TILE_SIZE), TILE_SIZE, TILE_SIZE};
-	switch (tile->type) {
-		case TileState::SEALED:
-		{
-			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
-			break;
-		}
-		case TileState::BOMB:
-		{
-			DrawRectangleRec(cell_rect, RED);
-			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
-			break;
-		}
-		case TileState::REVEALED:
-		{
-			const int x_offset = 10;
-			DrawRectangleRec(cell_rect, GRAY);
-			if (tile->count > 0) {
-				drawNumber(tile);
-			}
-			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
-			break;
-		}
-		case TileState::PRESSED:
-		{
-			DrawRectangleRec(cell_rect, GRAY);
-			break;
-		}
-		case TileState::FLAGGED:
-		{
-			DrawRectangleRec(cell_rect, BLUE);
-			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
-			break;
-		}
-	}
+	Painter::drawBoardMenu(settings.mines_count, current_flags_count);
 }
 
 void GameBoard::onLeftMouseRelease() {
@@ -118,7 +92,7 @@ void GameBoard::onLeftMouseRelease() {
 	}
 	if (tile->is_bomb) {
 		GameWindow::setGameState(GameState::LOSE);
-		tile->type = TileState::BOMB;
+		tile->state = TileState::BOMB;
 		return;
 	}
 	markTileRevealedRecursively(tile);
@@ -129,6 +103,26 @@ void GameBoard::onLeftMouseDown() {
 	if (tile == nullptr) {
 		return;
 	}
+	if (tile->state != TileState::REVEALED) {
+		return;
+	}
+	// toggle nearby sealed tiles as pressed
+	static std::vector<std::pair<int, int>> relative_positions = {
+		{-1, -1}, {0, -1}, {1, -1},
+		{-1, 0}, {1, 0},
+		{-1, 1}, {0, 1}, {1, 1}
+	};
+	for (const auto& [x, y] : relative_positions) {
+		Tile* _tile = findTile(tile->x + x, tile->y + y);
+		if (_tile == nullptr) {
+			continue;
+		}
+		if (_tile->state != TileState::SEALED) {
+			continue;
+		}
+		_tile->state = TileState::PRESSED;
+	}
+	// if its solved around, mark them revealed
 }
 
 void GameBoard::onRightMouseRelease() {
@@ -136,14 +130,14 @@ void GameBoard::onRightMouseRelease() {
 	if (tile == nullptr) {
 		return;
 	}
-	if (tile->type == TileState::FLAGGED) {
-		tile->type = TileState::SEALED;
+	if (tile->state == TileState::FLAGGED) {
+		tile->state = TileState::SEALED;
 		return;
 	}
-	if (tile->type != TileState::SEALED) {
+	if (tile->state != TileState::SEALED) {
 		return;
 	}
-	tile->type = TileState::FLAGGED;
+	tile->state = TileState::FLAGGED;
 	checkWinState();
 }
 
@@ -174,7 +168,7 @@ Tile* GameBoard::findTile(int tile_x, int tile_y) {
 }
 
 void GameBoard::markTileRevealedRecursively(Tile* tile) {
-	tile->type = TileState::REVEALED;
+	tile->state = TileState::REVEALED;
 	uint8_t mines_count = 0;
 	static std::vector<std::pair<int, int>> relative_positions = {
 		{-1, -1}, {0, -1}, {1, -1},
@@ -199,7 +193,7 @@ void GameBoard::markTileRevealedRecursively(Tile* tile) {
 			if (_tile == nullptr) {
 				continue;
 			}
-			if (_tile->type != TileState::SEALED) {
+			if (_tile->state != TileState::SEALED) {
 				continue;
 			}
 			markTileRevealedRecursively(_tile);
@@ -216,7 +210,7 @@ void GameBoard::checkWinState() {
 			if (tile == nullptr) {
 				continue;
 			}
-			if (tile->is_bomb && tile->type == TileState::FLAGGED) {
+			if (tile->is_bomb && tile->state == TileState::FLAGGED) {
 				mines_n_flagged_count++;
 			}
 		}
@@ -236,29 +230,8 @@ void GameBoard::autoPlay() {
 		if (!tile->is_bomb) {
 			markTileRevealedRecursively(tile.get());
 		} else {
-			tile->type = TileState::FLAGGED;
+			tile->state = TileState::FLAGGED;
 		}
 	}
 	checkWinState();
-}
-
-void GameBoard::drawNumber(const Tile* tile) {
-	const float x = static_cast<float>(tile->x) * static_cast<float>(TILE_SIZE);
-	const float y = static_cast<float>(tile->y) * static_cast<float>(TILE_SIZE);
-	const float tile_half = static_cast<float>(TILE_SIZE) / 2.F;
-	const char* text = TextFormat("%d", tile->count);
-	Vector2 text_size = MeasureTextEx(GetFontDefault(), text, TILE_SIZE, 1.F);
-	const Vector2 text_pos = {x + tile_half - text_size.x / 2.F, y + tile_half - text_size.y / 2.F + 3.F};
-	DrawTextEx(GetFontDefault(), text, text_pos, TILE_SIZE, 1.F, RAYWHITE);
-}
-
-void GameBoard::drawMenu() {
-	const char* mines_text = TextFormat("MINES: %d", settings.mines_count);
-	const float bottom_line_y = static_cast<float>(settings.board_height * TILE_SIZE) + 2.F;
-	const Vector2 mines_text_pos = {TILE_SIZE, bottom_line_y};
-	DrawTextEx(GetFontDefault(), mines_text, mines_text_pos, TILE_SIZE, 1.5F, RAYWHITE);
-
-	const char* flags_text = TextFormat("FLAGS: %d", current_flags_count);
-	const Vector2 flags_text_pos = {TILE_SIZE * 8.F, bottom_line_y};
-	DrawTextEx(GetFontDefault(), flags_text, flags_text_pos, TILE_SIZE, 1.5F, RAYWHITE);
 }

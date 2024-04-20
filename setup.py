@@ -9,11 +9,7 @@ def generate_cmake():
     print("===== Starting CMake project generation =====")
     cmake = ['cmake', '-S', ROOT_PATH, '-B', BUILD_FOLDER_PATH]
 
-    if sys.platform == 'win32':
-        cmake.append('-DWIN32=1')
-        cmake.append('-AWin32')
-    else:
-        cmake.append('-DMACOS=1')
+    cmake.append('-GNinja')
 
     cmake.append('-DCMAKE_EXPORT_COMPILE_COMMANDS=1')
     process = subprocess.run(cmake)

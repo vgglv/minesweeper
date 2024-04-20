@@ -24,7 +24,6 @@ namespace game {
 		static void setGameState(GameState _state);
 	private:
 		static bool checkIfNeedRestart();
-		static void drawMenu();
 	};
 
 }

@@ -1,8 +1,13 @@
 #include "GameWindow.h"
 #include "GameBoard.h"
 #include "Constants.h"
+#include "Painter.h"
+
+// std
 #include <limits>
-#include <raylib.h>
+
+// dependency
+#include "raylib.h"
 
 using namespace game;
 
@@ -79,7 +84,7 @@ void GameWindow::run() {
 				break;
 			}
 		}
-		drawMenu();
+		Painter::drawStageText(current_mines_diffuculty - 19);
 		EndDrawing();
 	}
 }
@@ -111,13 +116,4 @@ bool GameWindow::checkIfNeedRestart() {
 	state = GameState::IDLE;
 	GameBoard::initialize(settings);
 	return true;
-}
-
-void GameWindow::drawMenu() {
-	GameBoard::drawMenu();
-
-	const char* stage_text = TextFormat("STAGE: %d", current_mines_diffuculty - 19);
-	const float bottom_line_y = static_cast<float>(BOARD_HEIGHT * TILE_SIZE) + 2.F;
-	const Vector2 stage_text_pos = {TILE_SIZE * 15.F, bottom_line_y};
-	DrawTextEx(GetFontDefault(), stage_text, stage_text_pos, TILE_SIZE, 1.5F, RAYWHITE);
 }
