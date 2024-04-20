@@ -90,11 +90,6 @@ void GameBoard::onLeftMouseRelease() {
 	if (tile == nullptr) {
 		return;
 	}
-	if (tile->is_bomb) {
-		GameWindow::setGameState(GameState::LOSE);
-		tile->state = TileState::BOMB;
-		return;
-	}
 	markTileRevealedRecursively(tile);
 }
 
@@ -122,7 +117,6 @@ void GameBoard::onLeftMouseDown() {
 		}
 		_tile->state = TileState::PRESSED;
 	}
-	// if its solved around, mark them revealed
 }
 
 void GameBoard::onRightMouseRelease() {
@@ -132,6 +126,43 @@ void GameBoard::onRightMouseRelease() {
 	}
 	if (tile->state == TileState::FLAGGED) {
 		tile->state = TileState::SEALED;
+		return;
+	}
+	if (tile->state == TileState::REVEALED) {
+		// user wants to automate
+		uint8_t flagged_count = 0;
+		for (int dx = -1; dx <= 1; dx++) {
+			for (int dy = -1; dy <= 1; dy++) {
+				Tile* _tile = findTile(tile->x + dx, tile->y + dy);
+				if (_tile == nullptr) {
+					continue;
+				}
+				if (_tile->state == TileState::FLAGGED) {
+					flagged_count++;
+				}
+			}
+		}
+		if (flagged_count == tile->count) {
+			// reveal all tiles
+			for (int dx = -1; dx <= 1; dx++) {
+				for (int dy = -1; dy <= 1; dy++) {
+					Tile* _tile = findTile(tile->x + dx, tile->y + dy);
+					if (_tile == nullptr) {
+						continue;
+					}
+					if (_tile->state != TileState::SEALED) {
+						continue;
+					}
+					markTileRevealedRecursively(_tile);
+					//if (_tile->is_bomb) {
+					//	GameWindow::setGameState(GameState::LOSE);
+					//	_tile->state = TileState::BOMB;
+					//	continue;
+					//}
+					//_tile->state = TileState::REVEALED;
+				}
+			}
+		}
 		return;
 	}
 	if (tile->state != TileState::SEALED) {
@@ -168,35 +199,37 @@ Tile* GameBoard::findTile(int tile_x, int tile_y) {
 }
 
 void GameBoard::markTileRevealedRecursively(Tile* tile) {
+	if (tile->is_bomb) {
+		GameWindow::setGameState(GameState::LOSE);
+		tile->state = TileState::BOMB;
+		return;
+	}
 	tile->state = TileState::REVEALED;
 	uint8_t mines_count = 0;
-	static std::vector<std::pair<int, int>> relative_positions = {
-		{-1, -1}, {0, -1}, {1, -1},
-		{-1, 0},           {1, 0},
-		{-1, 1},  {0, 1},  {1, 1}
-	};
-	for (const auto& [x, y] : relative_positions) {
-		Tile* _tile = findTile(tile->x + x, tile->y + y);
-		if (_tile == nullptr) {
-			continue;
-		}
-		if (_tile->is_bomb) {
-			mines_count++;
+	for (int dx = -1; dx <= 1; dx++) {
+		for (int dy = -1; dy <= 1; dy++) {
+			Tile* _tile = findTile(tile->x + dx, tile->y + dy);
+			if (_tile == nullptr) {
+				continue;
+			}
+			if (_tile->is_bomb) {
+				mines_count++;
+			}
 		}
 	}
 	if (mines_count == 0) {
 		// no mines nearby, repeat the process
-		for (const auto& [x, y] : relative_positions) {
-			const int new_x = tile->x + x;
-			const int new_y = tile->y + y;
-			Tile* _tile = findTile(new_x, new_y);
-			if (_tile == nullptr) {
-				continue;
+		for (int dx = -1; dx <= 1; dx++) {
+			for (int dy = -1; dy <= 1; dy++) {
+				Tile* _tile = findTile(tile->x + dx, tile->y + dy);
+				if (_tile == nullptr) {
+					continue;
+				}
+				if (_tile->state != TileState::SEALED) {
+					continue;
+				}
+				markTileRevealedRecursively(_tile);
 			}
-			if (_tile->state != TileState::SEALED) {
-				continue;
-			}
-			markTileRevealedRecursively(_tile);
 		}
 	}
 	tile->count = mines_count;
