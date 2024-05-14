@@ -3,40 +3,34 @@
 #include "GameWindow.h"
 #include "Tile.h"
 #include "Painter.h"
-
-// std
-#include <vector>
-#include <memory>
-#include <random>
-#include <algorithm>
+#include <stdlib.h>
 
 // dependency
 #include "raylib.h"
 
-using namespace game;
+#define TILE_MAX_SIZE_V TILE_SIZE * BOARD_WIDTH
+#define TILE_MAX_SIZE_H TILE_SIZE * BOARD_HEIGHT
 
-namespace {
-	std::vector<std::unique_ptr<Tile>> tiles;
-	BoardSettings settings;
-	unsigned int current_flags_count = 0;
+Tile _tiles[TILE_MAX_SIZE_V][TILE_MAX_SIZE_H];
+uint8_t _mines_count;
+unsigned int current_flags_count = 0;
+
+void placeOneMine();
+
+void initialize(const uint8_t mines_count) {
+	_mines_count = mines_count;
 }
 
-void GameBoard::initialize(const BoardSettings& _settings) {
-	tiles.clear();
-	settings = _settings;
-	generateBoardTiles();
-	// autoPlay();
-}
-
-void GameBoard::generateBoardTiles() {
-	for (int i=0;i<settings.mines_count;i++) {
+void generateBoardTiles() {
+	for (int i=0;i<_mines_count;i++) {
 		placeOneMine();
 	}
-	for (int i=0;i<settings.board_width;i++) {
-		for (int j=0;j<settings.board_height;j++) {
-			if (findTile(i,j) != nullptr) {
+	for (int i=0;i<BOARD_WIDTH;i++) {
+		for (int j=0;j<BOARD_HEIGHT;j++) {
+			if (& != NULL) {
 				continue;
 			}
+
 			auto tile = std::make_unique<Tile>();
 			tile->x = i;
 			tile->y = j;
@@ -45,7 +39,7 @@ void GameBoard::generateBoardTiles() {
 	}
 }
 
-void GameBoard::placeOneMine() {
+void placeOneMine() {
 	std::random_device dev_x;
 	std::mt19937 rng_x(dev_x());
 	std::uniform_int_distribution<std::mt19937::result_type> dist_x(0,settings.board_width-1);

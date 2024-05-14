@@ -5,23 +5,28 @@
 // dependency
 #include "raylib.h"
 
-using namespace game;
+void drawNumber(const Tile* tile);
 
-void Painter::drawTile(Tile *tile) {
-	Rectangle cell_rect = {static_cast<float>(tile->x * TILE_SIZE), static_cast<float>(tile->y * TILE_SIZE), TILE_SIZE, TILE_SIZE};
+void Painter_drawTile(const Tile *tile) {
+	Rectangle cell_rect = {
+		.x = (float)(tile->x * TILE_SIZE),
+		.y = (float)(tile->y * TILE_SIZE),
+		.width = (float)TILE_SIZE,
+		.height = (float)TILE_SIZE,
+	};
 	switch (tile->state) {
-		case TileState::SEALED:
+		case SEALED:
 		{
 			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
 			break;
 		}
-		case TileState::BOMB:
+		case BOMB:
 		{
 			DrawRectangleRec(cell_rect, RED);
 			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
 			break;
 		}
-		case TileState::REVEALED:
+		case REVEALED:
 		{
 			const int x_offset = 10;
 			DrawRectangleRec(cell_rect, GRAY);
@@ -31,13 +36,13 @@ void Painter::drawTile(Tile *tile) {
 			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
 			break;
 		}
-		case TileState::PRESSED:
+		case PRESSED:
 		{
 			DrawRectangleRec(cell_rect, DARKGRAY);
 			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
 			break;
 		}
-		case TileState::FLAGGED:
+		case FLAGGED:
 		{
 			DrawRectangleRec(cell_rect, BLUE);
 			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
@@ -47,30 +52,39 @@ void Painter::drawTile(Tile *tile) {
 
 }
 
-void Painter::drawNumber(const Tile* tile) {
-	const float x = static_cast<float>(tile->x) * static_cast<float>(TILE_SIZE);
-	const float y = static_cast<float>(tile->y) * static_cast<float>(TILE_SIZE);
-	const float tile_half = static_cast<float>(TILE_SIZE) / 2.F;
+void drawNumber(const Tile* tile) {
+	const float x = (float)(tile->x * TILE_SIZE);
+	const float y = (float)(tile->y * TILE_SIZE);
+	const float tile_half = (float)(TILE_SIZE) / 2.F;
 	const char* text = TextFormat("%d", tile->count);
 	Vector2 text_size = MeasureTextEx(GetFontDefault(), text, TILE_SIZE, 1.F);
-	const Vector2 text_pos = {x + tile_half - text_size.x / 2.F, y + tile_half - text_size.y / 2.F + 3.F};
+	const Vector2 text_pos = {
+		.x = x + tile_half - text_size.x / 2.F, 
+		.y = y + tile_half - text_size.y / 2.F + 3.F
+	};
 	DrawTextEx(GetFontDefault(), text, text_pos, TILE_SIZE, 1.F, RAYWHITE);
 }
 
-void Painter::drawBoardMenu(uint8_t mines_count, uint8_t flags_count) {
+void Painter_drawBoardMenu(uint8_t* mines_count, uint8_t* flags_count) {
 	const char* mines_text = TextFormat("MINES: %d", mines_count);
-	const float bottom_line_y = static_cast<float>(BOARD_HEIGHT * TILE_SIZE) + 2.F;
+	const float bottom_line_y = (float)(BOARD_HEIGHT * TILE_SIZE) + 2.F;
 	const Vector2 mines_text_pos = {TILE_SIZE, bottom_line_y};
 	DrawTextEx(GetFontDefault(), mines_text, mines_text_pos, TILE_SIZE, 1.5F, RAYWHITE);
 
 	const char* flags_text = TextFormat("FLAGS: %d", flags_count);
-	const Vector2 flags_text_pos = {TILE_SIZE * 8.F, bottom_line_y};
+	const Vector2 flags_text_pos = {
+		.x = (float)TILE_SIZE * 8.F, 
+		.y = bottom_line_y
+	};
 	DrawTextEx(GetFontDefault(), flags_text, flags_text_pos, TILE_SIZE, 1.5F, RAYWHITE);
 }
 
-void Painter::drawStageText(uint8_t stage) {
+void Painter_drawStageText(uint8_t* stage) {
 	const char* stage_text = TextFormat("STAGE: %d", stage);
-	const float bottom_line_y = static_cast<float>(BOARD_HEIGHT * TILE_SIZE) + 2.F;
-	const Vector2 stage_text_pos = {TILE_SIZE * 15.F, bottom_line_y};
+	const float bottom_line_y = (float)(BOARD_HEIGHT * TILE_SIZE) + 2.F;
+	const Vector2 stage_text_pos = {
+		.x = (float)(TILE_SIZE) * 15.F, 
+		.y = bottom_line_y
+	};
 	DrawTextEx(GetFontDefault(), stage_text, stage_text_pos, TILE_SIZE, 1.5F, RAYWHITE);
 }

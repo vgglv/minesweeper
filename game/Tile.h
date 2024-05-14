@@ -1,20 +1,19 @@
 #pragma once
+#include <stdbool.h>
 
-namespace game {
-	enum class TileState {
-		PRESSED,
-		REVEALED,
-		SEALED,
-		BOMB,
-		FLAGGED,
-	};
+typedef enum {
+	PRESSED,
+	REVEALED,
+	SEALED,
+	BOMB,
+	FLAGGED,
+} TileState;
 
-	struct Tile {
-		int x{};
-		int y{};
-		TileState state = TileState::SEALED;
-		bool is_bomb = false;
-		bool is_flagged = false;
-		int count = 0;
-	};
-}
+typedef struct {
+	int x;
+	int y;
+	TileState state;
+	bool is_bomb;
+	bool is_flagged;
+	int count;
+} Tile;

@@ -1,29 +1,33 @@
 #pragma once
 
-namespace game {
-	enum class GameState {
-		IDLE,
-		WIN,
-		LOSE,
-		QUIT
-	};
+typedef enum {
+	IDLE,
+	WIN,
+	LOSE,
+	QUIT
+} GameState;
 
-	class GameWindow {
-	public:
-		GameWindow() = delete;
-		GameWindow(const GameWindow &) = delete;
-		GameWindow(GameWindow &&) = delete;
-		GameWindow &operator=(const GameWindow &) = delete;
-		GameWindow &operator=(GameWindow &&) = delete;
-		~GameWindow() = delete;
+void GameWindow_initialize();
+void GameWindow_run();
+void GameWindow_terminate();
+void GameWindow_setGameState(GameState _state);
 
-		static void initialize();
-		static void run();
-		static void terminate();
+//	class GameWindow {
+//	public:
+//		GameWindow() = delete;
+//		GameWindow(const GameWindow &) = delete;
+//		GameWindow(GameWindow &&) = delete;
+//		GameWindow &operator=(const GameWindow &) = delete;
+//		GameWindow &operator=(GameWindow &&) = delete;
+//		~GameWindow() = delete;
+//
+//		static void initialize();
+//		static void run();
+//		static void terminate();
+//
+//		static void setGameState(GameState _state);
+//	private:
+//		static bool checkIfNeedRestart();
+//	};
 
-		static void setGameState(GameState _state);
-	private:
-		static bool checkIfNeedRestart();
-	};
-
-}
+//}

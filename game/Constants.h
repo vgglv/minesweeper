@@ -1,6 +1,6 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
 
-constexpr uint8_t TILE_SIZE = 32;
-constexpr uint8_t BOARD_WIDTH = 30;
-constexpr uint8_t BOARD_HEIGHT = 20;
+const uint8_t TILE_SIZE = 32;
+const uint8_t BOARD_WIDTH = 30;
+const uint8_t BOARD_HEIGHT = 20;

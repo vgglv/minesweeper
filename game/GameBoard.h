@@ -1,33 +1,26 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
 
-namespace game {
-	struct Tile;
-	struct BoardSettings {
-		uint8_t board_width;
-		uint8_t board_height;
-		uint8_t mines_count;
-	};
+static void initialize(const uint8_t mines_count);
+static void draw();
 
-	class GameBoard {
-	public:
-		static void initialize(const BoardSettings& _settings);
-		static void draw();
+static void onLeftMouseRelease();
+static void onLeftMouseDown();
+static void onRightMouseRelease();
 
-		static void onLeftMouseRelease();
-		static void onLeftMouseDown();
-		static void onRightMouseRelease();
+static uint8_t getBoardWidth();
 
-		static uint8_t getBoardWidth();
-	private:
-		// may return nullptr
-		static Tile* findTileUnderCursor();
-		static Tile* findTile(int tile_x, int tile_y);
-		static void generateBoardTiles();
-		static void placeOneMine();
-		static void markTileRevealedRecursively(Tile* tile);
-		static void checkWinState();
-
-		static void autoPlay();
-	};
-}
+//	class GameBoard {
+//	public:
+//	private:
+//		// may return nullptr
+//		static Tile* findTileUnderCursor();
+//		static Tile* findTile(int tile_x, int tile_y);
+//		static void generateBoardTiles();
+//		static void placeOneMine();
+//		static void markTileRevealedRecursively(Tile* tile);
+//		static void checkWinState();
+//
+//		static void autoPlay();
+//	};
+//}
