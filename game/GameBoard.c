@@ -4,134 +4,148 @@
 #include "Tile.h"
 #include "Painter.h"
 #include <stdlib.h>
+#include <time.h>
+#include <stdio.h>
 
 // dependency
 #include "raylib.h"
 
-#define TILE_MAX_SIZE_V TILE_SIZE * BOARD_WIDTH
-#define TILE_MAX_SIZE_H TILE_SIZE * BOARD_HEIGHT
-
-Tile _tiles[TILE_MAX_SIZE_V][TILE_MAX_SIZE_H];
+Tile tiles[BOARD_WIDTH][BOARD_HEIGHT];
 uint8_t _mines_count;
 unsigned int current_flags_count = 0;
 
-void placeOneMine();
+static void placeOneMine();
+static void markTileRevealedRecursively(Tile* tile);
+static void checkWinState();
+static Tile* findTileUnderCursor();
+static Tile* findTile(int tile_x, int tile_y);
+static void generateBoardTiles();
+static Tile generateTile(int x, int y) {
+	struct Tile tile = {
+		.x = x,
+		.y = y,
+		.draw_state = SEALED,
+		.is_bomb = false,
+		.is_flagged = false,
+		.count = 0
+	};
+	return tile;
+};
 
-void initialize(const uint8_t mines_count) {
+void GameBoard_initialize(const uint8_t mines_count) {
+	printf("Initializing GameBoard\n");
 	_mines_count = mines_count;
+	generateBoardTiles();
 }
 
-void generateBoardTiles() {
+static void generateBoardTiles() {
+	for (int i=0;i<BOARD_WIDTH;i++) {
+		for (int j=0;j<BOARD_HEIGHT;j++) {
+			tiles[i][j] = generateTile(i, j);
+		}
+	}
 	for (int i=0;i<_mines_count;i++) {
 		placeOneMine();
 	}
-	for (int i=0;i<BOARD_WIDTH;i++) {
-		for (int j=0;j<BOARD_HEIGHT;j++) {
-			if (& != NULL) {
-				continue;
-			}
-
-			auto tile = std::make_unique<Tile>();
-			tile->x = i;
-			tile->y = j;
-			tiles.emplace_back(std::move(tile));
-		}
-	}
 }
 
-void placeOneMine() {
-	std::random_device dev_x;
-	std::mt19937 rng_x(dev_x());
-	std::uniform_int_distribution<std::mt19937::result_type> dist_x(0,settings.board_width-1);
+static void regenerateSeed() {
+	static unsigned int seed = 0;
+	if (seed == 0) {
+		seed = (unsigned int)time(NULL);
+	}
+	seed++;
+	srand(seed);
+}
 
-	std::random_device dev_y;
-	std::mt19937 rng_y(dev_y());
-	std::uniform_int_distribution<std::mt19937::result_type> dist_y(0,settings.board_height-1);
+static void placeOneMine() {
+	regenerateSeed();
+	unsigned int x = rand() % (BOARD_WIDTH - 1);
+	regenerateSeed();
+	unsigned int y = rand() % (BOARD_HEIGHT - 1);
 
-	unsigned int x = dist_x(rng_x);
-	unsigned int y = dist_y(rng_y);
-	if (findTile(x, y) != nullptr) {
-		// we hit the same place with mine, try to regenerate
+	if (tiles[x][y].is_bomb == true) {
 		placeOneMine();
 		return;
 	}
-	auto tile = std::make_unique<Tile>();
-	tile->x = static_cast<int>(x);
-	tile->y = static_cast<int>(y);
-	tile->is_bomb = true;
-	tiles.emplace_back(std::move(tile));
+
+	tiles[x][y].is_bomb = true;
 }
 
-void GameBoard::draw() {
+void GameBoard_draw() {
 	unsigned int _current_flags_count = 0;
-	for (const auto& tile : tiles) {
-		Painter::drawTile(tile.get());
-		if (tile->state == TileState::FLAGGED) {
-			_current_flags_count++;
-		}
-		if (tile->state == TileState::PRESSED) {
-			tile->state = TileState::SEALED;
+	for (int i=0;i<BOARD_WIDTH;i++) {
+		for (int j=0;j<BOARD_HEIGHT;j++) {
+			Tile* tile_pointer = &tiles[i][j];
+			Painter_drawTile(tile_pointer);
+			switch (tile_pointer->draw_state) {
+				case FLAGGED:
+				{
+					_current_flags_count++;
+					break;
+				}
+				case PRESSED:
+				{
+					tile_pointer->draw_state = SEALED;
+					break;
+				}
+				default:
+					break;
+			}
 		}
 	}
-
 	current_flags_count = _current_flags_count;
 
-	Painter::drawBoardMenu(settings.mines_count, current_flags_count);
+	Painter_drawBoardMenu(_mines_count, current_flags_count);
 }
 
-void GameBoard::onLeftMouseRelease() {
+void GameBoard_onLeftMouseRelease() {
 	Tile* tile = findTileUnderCursor();
-	if (tile == nullptr) {
+	if (!tile) {
 		return;
 	}
 	markTileRevealedRecursively(tile);
 }
 
-void GameBoard::onLeftMouseDown() {
+void GameBoard_onLeftMouseDown() {
 	Tile* tile = findTileUnderCursor();
-	if (tile == nullptr) {
+	if (!tile) {
 		return;
 	}
-	if (tile->state != TileState::REVEALED) {
+	if (tile->draw_state != REVEALED) {
 		return;
 	}
 	// toggle nearby sealed tiles as pressed
-	static std::vector<std::pair<int, int>> relative_positions = {
-		{-1, -1}, {0, -1}, {1, -1},
-		{-1, 0}, {1, 0},
-		{-1, 1}, {0, 1}, {1, 1}
-	};
-	for (const auto& [x, y] : relative_positions) {
-		Tile* _tile = findTile(tile->x + x, tile->y + y);
-		if (_tile == nullptr) {
-			continue;
+	for (int i = -1; i < 2; i++) {
+		for (int j = -1; j < 2; j++) {
+			Tile* _tile = findTile(tile->x + i, tile->y + j);
+			if (_tile->draw_state != SEALED) {
+				continue;
+			}
+			_tile->draw_state = PRESSED;
 		}
-		if (_tile->state != TileState::SEALED) {
-			continue;
-		}
-		_tile->state = TileState::PRESSED;
 	}
 }
 
-void GameBoard::onRightMouseRelease() {
+void GameBoard_onRightMouseRelease() {
 	Tile* tile = findTileUnderCursor();
-	if (tile == nullptr) {
+	if (tile == NULL) {
 		return;
 	}
-	if (tile->state == TileState::FLAGGED) {
-		tile->state = TileState::SEALED;
+	if (tile->draw_state == FLAGGED) {
+		tile->draw_state = SEALED;
 		return;
 	}
-	if (tile->state == TileState::REVEALED) {
+	if (tile->draw_state == REVEALED) {
 		// user wants to automate
 		uint8_t flagged_count = 0;
 		for (int dx = -1; dx <= 1; dx++) {
 			for (int dy = -1; dy <= 1; dy++) {
 				Tile* _tile = findTile(tile->x + dx, tile->y + dy);
-				if (_tile == nullptr) {
+				if (_tile == NULL) {
 					continue;
 				}
-				if (_tile->state == TileState::FLAGGED) {
+				if (_tile->draw_state == FLAGGED) {
 					flagged_count++;
 				}
 			}
@@ -141,71 +155,69 @@ void GameBoard::onRightMouseRelease() {
 			for (int dx = -1; dx <= 1; dx++) {
 				for (int dy = -1; dy <= 1; dy++) {
 					Tile* _tile = findTile(tile->x + dx, tile->y + dy);
-					if (_tile == nullptr) {
+					if (_tile == NULL) {
 						continue;
 					}
-					if (_tile->state != TileState::SEALED) {
+					if (_tile->draw_state != SEALED) {
 						continue;
 					}
 					markTileRevealedRecursively(_tile);
-					//if (_tile->is_bomb) {
-					//	GameWindow::setGameState(GameState::LOSE);
-					//	_tile->state = TileState::BOMB;
-					//	continue;
-					//}
-					//_tile->state = TileState::REVEALED;
 				}
 			}
 		}
 		return;
 	}
-	if (tile->state != TileState::SEALED) {
+	if (tile->draw_state != SEALED) {
 		return;
 	}
-	tile->state = TileState::FLAGGED;
+	tile->draw_state = FLAGGED;
 	checkWinState();
 }
 
-Tile* GameBoard::findTileUnderCursor() {
-	const auto& it = std::find_if(tiles.begin(), tiles.end(), [](const std::unique_ptr<Tile>& tile) {
-		const int& mouse_x = GetMouseX();
-		const int& mouse_y = GetMouseY();
-		return mouse_x >= tile->x * TILE_SIZE && 
-			mouse_x < (tile->x + 1) * TILE_SIZE &&
-			mouse_y >= tile->y * TILE_SIZE && 
-			mouse_y < (tile->y + 1) * TILE_SIZE;
-	});
-	if (it != tiles.end()) {
-		return it->get();
+static Tile* findTileUnderCursor() {
+	const int mouse_x = GetMouseX();
+	const int mouse_y = GetMouseY();
+	int cell_x = mouse_x / TILE_SIZE;
+	int cell_y = mouse_y / TILE_SIZE;
+	bool in_boundary = cell_x >= 0 &&
+			cell_x < BOARD_WIDTH &&
+			cell_y >= 0 &&
+			cell_y < BOARD_HEIGHT;
+	if (in_boundary == false) {
+		return NULL;
 	}
-	return nullptr;
+	return &tiles[cell_x][cell_y];
 }
 
-Tile* GameBoard::findTile(int tile_x, int tile_y) {
-	const auto& it = std::find_if(tiles.begin(), tiles.end(), [tile_x, tile_y](const std::unique_ptr<Tile>& tile) {
-		return tile_x == tile->x && 
-			tile_y == tile->y;
-	});
-	if (it != tiles.end()) {
-		return it->get();
+static Tile* findTile(int tile_x, int tile_y) {
+	if (tile_x < 0 || tile_x > BOARD_WIDTH - 1) {
+		return NULL;
 	}
-	return nullptr;
+	if (tile_y < 0 || tile_y > BOARD_HEIGHT - 1) {
+		return NULL;
+	}
+	return &tiles[tile_x][tile_y];
 }
 
-void GameBoard::markTileRevealedRecursively(Tile* tile) {
+static void markTileRevealedRecursively(Tile* tile) {
 	if (tile->is_bomb) {
-		GameWindow::setGameState(GameState::LOSE);
-		tile->state = TileState::BOMB;
+		GameWindow_setGameState(LOSE);
+		tile->draw_state = BOMB;
 		return;
 	}
-	tile->state = TileState::REVEALED;
+	tile->draw_state = REVEALED;
 	uint8_t mines_count = 0;
 	for (int dx = -1; dx <= 1; dx++) {
 		for (int dy = -1; dy <= 1; dy++) {
-			Tile* _tile = findTile(tile->x + dx, tile->y + dy);
-			if (_tile == nullptr) {
+			int pos_x = tile->x + dx;
+			int pos_y = tile->y + dy;
+			if (pos_x >= BOARD_WIDTH || pos_x < 0) {
 				continue;
 			}
+			if (pos_y >= BOARD_HEIGHT || pos_y < 0) {
+				continue;
+			}
+			Tile* _tile = &tiles[pos_x][pos_y];
 			if (_tile->is_bomb) {
 				mines_count++;
 			}
@@ -215,11 +227,16 @@ void GameBoard::markTileRevealedRecursively(Tile* tile) {
 		// no mines nearby, repeat the process
 		for (int dx = -1; dx <= 1; dx++) {
 			for (int dy = -1; dy <= 1; dy++) {
-				Tile* _tile = findTile(tile->x + dx, tile->y + dy);
-				if (_tile == nullptr) {
+				int pos_x = tile->x + dx;
+				int pos_y = tile->y + dy;
+				if (pos_x >= BOARD_WIDTH || pos_x < 0) {
 					continue;
 				}
-				if (_tile->state != TileState::SEALED) {
+				if (pos_y >= BOARD_HEIGHT || pos_y < 0) {
+					continue;
+				}
+				Tile* _tile = &tiles[pos_x][pos_y];
+				if (_tile->draw_state != SEALED) {
 					continue;
 				}
 				markTileRevealedRecursively(_tile);
@@ -229,36 +246,18 @@ void GameBoard::markTileRevealedRecursively(Tile* tile) {
 	tile->count = mines_count;
 }
 
-void GameBoard::checkWinState() {
+static void checkWinState() {
 	uint8_t mines_n_flagged_count = 0;
-	for (int i=0;i<settings.board_width;i++) {
-		for (int j=0;j<settings.board_height;j++) {
-			const Tile* tile = findTile(i, j);
-			if (tile == nullptr) {
-				continue;
-			}
-			if (tile->is_bomb && tile->state == TileState::FLAGGED) {
+	for (int i=0;i<BOARD_WIDTH;i++) {
+		for (int j=0;j<BOARD_HEIGHT;j++) {
+			Tile* tile = &tiles[i][j];
+			if (tile->is_bomb && tile->draw_state == FLAGGED) {
 				mines_n_flagged_count++;
 			}
 		}
 	}
 
-	if (mines_n_flagged_count == settings.mines_count) {
-		GameWindow::setGameState(GameState::WIN);
+	if (mines_n_flagged_count == _mines_count) {
+		GameWindow_setGameState(WIN);
 	}
-}
-
-uint8_t GameBoard::getBoardWidth() {
-	return settings.board_width;
-}
-
-void GameBoard::autoPlay() {
-	for (const auto& tile : tiles) {
-		if (!tile->is_bomb) {
-			markTileRevealedRecursively(tile.get());
-		} else {
-			tile->state = TileState::FLAGGED;
-		}
-	}
-	checkWinState();
 }

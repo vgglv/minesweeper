@@ -7,7 +7,7 @@ set(CXX_STANDARD 17)
 
 # APPLICATION
 file(GLOB_RECURSE GAME_SOURCES 
-	"game/*.cpp"
+	"game/*.c"
 	"game/*.h"
 )
 

@@ -9,7 +9,7 @@ def generate_cmake():
     print("===== Starting CMake project generation =====")
     cmake = ['cmake', '-S', ROOT_PATH, '-B', BUILD_FOLDER_PATH]
 
-    cmake.append('-GNinja')
+    cmake.append('-GXcode')
 
     cmake.append('-DCMAKE_EXPORT_COMPILE_COMMANDS=1')
     process = subprocess.run(cmake)

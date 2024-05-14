@@ -2,118 +2,107 @@
 #include "GameBoard.h"
 #include "Constants.h"
 #include "Painter.h"
-
-// std
-#include <limits>
-
-// dependency
 #include "raylib.h"
+#include <stdio.h>
 
-using namespace game;
+const uint8_t INITIAL_AMOUNT_OF_MINE_DIFFICULTY = 20;
 
-namespace {
-	GameState state = GameState::IDLE;
-	uint8_t current_mines_diffuculty = 20;
-}
+static GameState state = IDLE;
+static uint8_t current_mines_diffuculty = INITIAL_AMOUNT_OF_MINE_DIFFICULTY;
 
-void GameWindow::initialize() {
+bool checkIfNeedRestart();
+
+void GameWindow_initialize() {
 	const int screen_width = BOARD_WIDTH * TILE_SIZE;
 	const int screen_height = BOARD_HEIGHT * TILE_SIZE;
 	InitWindow(screen_width, screen_height + TILE_SIZE, "Minesweeper");
-	BoardSettings settings {
-		BOARD_WIDTH,
-		BOARD_HEIGHT,
-		current_mines_diffuculty
-	};
-	GameBoard::initialize(settings);
+	GameBoard_initialize(current_mines_diffuculty);
 }
 
-void GameWindow::run() {
+void GameWindow_run() {
 	while (!WindowShouldClose()) {
-		if (state == GameState::QUIT) {
+		if (state == QUIT) {
 			break;
 		}
 		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-			GameBoard::onLeftMouseDown();
+			GameBoard_onLeftMouseDown();
 		}
 
 		if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 			if (!checkIfNeedRestart()) {
-				GameBoard::onLeftMouseRelease();
+				GameBoard_onLeftMouseRelease();
 			}
 		}
 
 		if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
 			if (!checkIfNeedRestart()) {
-				GameBoard::onRightMouseRelease();
+				GameBoard_onRightMouseRelease();
 			}
 		}
 		BeginDrawing();
 		ClearBackground(BLACK);
-		GameBoard::draw();
+		GameBoard_draw();
 		switch(state) {
-			case GameState::WIN:
+			case WIN:
 			{
 				const char* win_text = "Stage completed!";
-				if (current_mines_diffuculty == std::numeric_limits<uint8_t>::max()) {
+				if (current_mines_diffuculty == UINT8_MAX) {
 					win_text = "You win the game!";
 				}
 				Vector2 text_size = MeasureTextEx(GetFontDefault(), win_text, TILE_SIZE, 3.F);
-				const int screen_width = GameBoard::getBoardWidth() * TILE_SIZE;
-				const Vector2 text_pos = { static_cast<float>(screen_width) / 2.F - text_size.x / 2.F, 200.0 };
+				const int screen_width = BOARD_WIDTH * TILE_SIZE;
+				const Vector2 text_pos = { 
+					.x = screen_width / 2.F - text_size.x / 2.F, 
+					.y = 200.0 
+				};
 				Rectangle cell_rect = {text_pos.x - TILE_SIZE, text_pos.y - TILE_SIZE, text_size.x + TILE_SIZE * 2, text_size.y + TILE_SIZE * 2};
 				DrawRectangleRec(cell_rect, BLUE);
 				DrawRectangleLinesEx(cell_rect, 3.f, BLACK);
 				DrawTextEx(GetFontDefault(), win_text, text_pos, TILE_SIZE, 3.F, YELLOW);
 				break;
 			}
-			case GameState::LOSE:
+			case LOSE:
 			{
 				const char* lose_text = "Game over";
 				Vector2 text_size = MeasureTextEx(GetFontDefault(), lose_text, TILE_SIZE, 1.F);
-				const int screen_width = GameBoard::getBoardWidth() * TILE_SIZE;
-				const Vector2 text_pos = { static_cast<float>(screen_width) / 2.F - text_size.x / 2.F, 200.0 };
+				const int screen_width = BOARD_WIDTH * TILE_SIZE;
+				const Vector2 text_pos = { (float)(screen_width) / 2.F - text_size.x / 2.F, 200.0 };
 				Rectangle cell_rect = {text_pos.x - TILE_SIZE, text_pos.y - TILE_SIZE, text_size.x + TILE_SIZE * 2, text_size.y + TILE_SIZE * 2};
 				DrawRectangleRec(cell_rect, BLUE);
 				DrawRectangleLinesEx(cell_rect, 3.f, BLACK);
 				DrawTextEx(GetFontDefault(), lose_text, text_pos, TILE_SIZE, 1.F, RED);
 				break;
 			}
-			case GameState::IDLE:
+			case IDLE:
 			{
 				break;
 			}
 		}
-		Painter::drawStageText(current_mines_diffuculty - 19);
+		Painter_drawStageText(current_mines_diffuculty - INITIAL_AMOUNT_OF_MINE_DIFFICULTY + 1);
 		EndDrawing();
 	}
 }
 
-void GameWindow::terminate() {
+void GameWindow_terminate() {
 	CloseWindow();
 }
 
-void GameWindow::setGameState(GameState _state) {
+void GameWindow_setGameState(GameState _state) {
 	state = _state;
 }
 
-bool GameWindow::checkIfNeedRestart() {
-	if (state == GameState::IDLE) {
+bool checkIfNeedRestart() {
+	if (state == IDLE) {
 		return false;
 	}
-	if (state == GameState::WIN) {
+	if (state == WIN) {
 		current_mines_diffuculty++;
 		if (current_mines_diffuculty == 0) {
-			state = GameState::QUIT;
+			state = QUIT;
 			return true;
 		}
 	}
-	BoardSettings settings {
-		BOARD_WIDTH,
-		BOARD_HEIGHT,
-		current_mines_diffuculty
-	};
-	state = GameState::IDLE;
-	GameBoard::initialize(settings);
+	GameBoard_initialize(current_mines_diffuculty);
+	state = IDLE;
 	return true;
 }

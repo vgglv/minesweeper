@@ -5,7 +5,7 @@
 // dependency
 #include "raylib.h"
 
-void drawNumber(const Tile* tile);
+static void drawNumber(const Tile* tile);
 
 void Painter_drawTile(const Tile *tile) {
 	Rectangle cell_rect = {
@@ -14,7 +14,7 @@ void Painter_drawTile(const Tile *tile) {
 		.width = (float)TILE_SIZE,
 		.height = (float)TILE_SIZE,
 	};
-	switch (tile->state) {
+	switch (tile->draw_state) {
 		case SEALED:
 		{
 			DrawRectangleLinesEx(cell_rect, 1.f, WHITE);
@@ -52,7 +52,7 @@ void Painter_drawTile(const Tile *tile) {
 
 }
 
-void drawNumber(const Tile* tile) {
+static void drawNumber(const Tile* tile) {
 	const float x = (float)(tile->x * TILE_SIZE);
 	const float y = (float)(tile->y * TILE_SIZE);
 	const float tile_half = (float)(TILE_SIZE) / 2.F;
@@ -65,7 +65,7 @@ void drawNumber(const Tile* tile) {
 	DrawTextEx(GetFontDefault(), text, text_pos, TILE_SIZE, 1.F, RAYWHITE);
 }
 
-void Painter_drawBoardMenu(uint8_t* mines_count, uint8_t* flags_count) {
+void Painter_drawBoardMenu(uint8_t mines_count, uint8_t flags_count) {
 	const char* mines_text = TextFormat("MINES: %d", mines_count);
 	const float bottom_line_y = (float)(BOARD_HEIGHT * TILE_SIZE) + 2.F;
 	const Vector2 mines_text_pos = {TILE_SIZE, bottom_line_y};
@@ -79,7 +79,7 @@ void Painter_drawBoardMenu(uint8_t* mines_count, uint8_t* flags_count) {
 	DrawTextEx(GetFontDefault(), flags_text, flags_text_pos, TILE_SIZE, 1.5F, RAYWHITE);
 }
 
-void Painter_drawStageText(uint8_t* stage) {
+void Painter_drawStageText(uint8_t stage) {
 	const char* stage_text = TextFormat("STAGE: %d", stage);
 	const float bottom_line_y = (float)(BOARD_HEIGHT * TILE_SIZE) + 2.F;
 	const Vector2 stage_text_pos = {

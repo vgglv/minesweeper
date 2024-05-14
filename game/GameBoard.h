@@ -1,14 +1,12 @@
 #pragma once
 #include <stdint.h>
 
-static void initialize(const uint8_t mines_count);
-static void draw();
+void GameBoard_initialize(const uint8_t mines_count);
+void GameBoard_draw();
 
-static void onLeftMouseRelease();
-static void onLeftMouseDown();
-static void onRightMouseRelease();
-
-static uint8_t getBoardWidth();
+void GameBoard_onLeftMouseRelease();
+void GameBoard_onLeftMouseDown();
+void GameBoard_onRightMouseRelease();
 
 //	class GameBoard {
 //	public:

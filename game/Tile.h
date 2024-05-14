@@ -1,7 +1,7 @@
 #pragma once
 #include <stdbool.h>
 
-typedef enum {
+typedef enum TileState {
 	PRESSED,
 	REVEALED,
 	SEALED,
@@ -9,10 +9,10 @@ typedef enum {
 	FLAGGED,
 } TileState;
 
-typedef struct {
+typedef struct Tile {
 	int x;
 	int y;
-	TileState state;
+	TileState draw_state;
 	bool is_bomb;
 	bool is_flagged;
 	int count;
