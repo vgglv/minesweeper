@@ -12,7 +12,7 @@
 using namespace game;
 
 namespace {
-	static GameState state = GameState::IDLE;
+	GameState state = GameState::IDLE;
 	uint8_t current_mines_diffuculty = 20;
 }
 
