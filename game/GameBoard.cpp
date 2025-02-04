@@ -1,8 +1,6 @@
 #include "GameBoard.h"
-#include "Constants.h"
-#include "GameWindow.h"
-#include "Tile.h"
-#include "Painter.h"
+#include "draw_functions.h"
+#include "types.h"
 
 // std
 #include <vector>
@@ -71,7 +69,7 @@ void GameBoard::placeOneMine() {
 void GameBoard::draw() {
 	unsigned int _current_flags_count = 0;
 	for (const auto& tile : tiles) {
-		Painter::drawTile(tile.get());
+		draw_functions::drawTile(tile.get());
 		if (tile->state == TileState::FLAGGED) {
 			_current_flags_count++;
 		}
@@ -82,7 +80,7 @@ void GameBoard::draw() {
 
 	current_flags_count = _current_flags_count;
 
-	Painter::drawBoardMenu(settings.mines_count, current_flags_count);
+	draw_functions::drawBoardMenu(settings.mines_count, current_flags_count);
 }
 
 void GameBoard::onLeftMouseRelease() {
@@ -200,7 +198,7 @@ Tile* GameBoard::findTile(int tile_x, int tile_y) {
 
 void GameBoard::markTileRevealedRecursively(Tile* tile) {
 	if (tile->is_bomb) {
-		GameWindow::setGameState(GameState::LOSE);
+		current_state = GameState::LOSE;
 		tile->state = TileState::BOMB;
 		return;
 	}
@@ -250,7 +248,7 @@ void GameBoard::checkWinState() {
 	}
 
 	if (mines_n_flagged_count == settings.mines_count) {
-		GameWindow::setGameState(GameState::WIN);
+		current_state = GameState::WIN;
 	}
 }
 

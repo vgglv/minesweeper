@@ -1,8 +1,9 @@
 #pragma once
 #include <cstdint>
 
+struct Tile;
+
 namespace game {
-	struct Tile;
 	struct BoardSettings {
 		uint8_t board_width;
 		uint8_t board_height;
