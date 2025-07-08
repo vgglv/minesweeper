@@ -1,0 +1,78 @@
+{
+	"version": 4,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 23,
+		"patch": 0
+	},
+	"configurePresets": [
+		{
+			"name": "base",
+			"hidden": true,
+			"binaryDir": "${sourceDir}/build",
+			"installDir": "${sourceDir}/dist"
+		},
+		{
+			"name": "clang",
+			"hidden": true,
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++"
+			}
+		},
+		{
+			"name": "gcc",
+			"hidden": true,
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "gcc",
+				"CMAKE_CXX_COMPILER": "g++"
+			}
+		},
+		{
+			"name": "vs2022",
+			"hidden": true,
+			"generator": "Visual Studio 17 2022",
+			"toolset": "host=x64"
+		},
+		{
+			"name": "win64-vs2022",
+			"inherits": [
+				"base",
+				"vs2022"
+			],
+			"cacheVariables": {
+				"WIN32": true
+			},
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			}
+		},
+		{
+			"name": "MacOS-Ninja",
+			"generator": "Ninja",
+			"inherits": [
+				"base",
+				"clang"
+			],
+			"cacheVariables": {
+				"MACOS": true,
+				"CMAKE_EXPORT_COMPILE_COMMANDS": true
+			},
+			"architecture": {
+				"value": "Universal",
+				"strategy": "external"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Darwin"
+			}
+		}
+	]
+}

@@ -23,11 +23,29 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 target_include_directories(${PROJECT_NAME} PUBLIC ${CWD}/game)
 
-set(GLFW_BUILD_WAYLAND OFF)
+if (MACOS)
+	target_link_libraries(${PROJECT_NAME} PRIVATE
+		"${CMAKE_SOURCE_DIR}/third_party/raylib-5.5_macos/lib/libraylib.a"
+	)
+	target_link_libraries(${PROJECT_NAME} PRIVATE 
+		"-framework OpenGL"
+		"-framework Cocoa"
+		"-framework IOKit"
+	)
+	target_include_directories(${PROJECT_NAME} PRIVATE
+		"third_party/raylib-5.5_macos/include"
+	)
+endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-	raylib
-)
+if (WIN32)
+	target_link_libraries(${PROJECT_NAME} PRIVATE 
+		"${CMAKE_SOURCE_DIR}/third_party/raylib-5.5_win64_msvc16/lib/raylib.lib"
+	)
+	target_include_directories(${PROJECT_NAME} PRIVATE 
+		"third_party/raylib-5.5_win64_msvc16/include"
+	)
+endif()
+
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}
