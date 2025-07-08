@@ -24,12 +24,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_include_directories(${PROJECT_NAME} PUBLIC ${CWD}/game)
 
 set(GLFW_BUILD_WAYLAND OFF)
-add_subdirectory(third_party/raylib)
 
-target_link_libraries(${PROJECT_NAME}
-	PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE 
 	raylib
 )
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}
